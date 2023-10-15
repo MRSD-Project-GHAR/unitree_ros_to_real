@@ -54,3 +54,9 @@ add_dependencies(twist_sub ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED
 add_executable(twist_sub_with_estop src/exe/twist_sub_with_estop.cpp)
 target_link_libraries(twist_sub_with_estop ${EXTRA_LIBS} ${catkin_LIBRARIES})
 add_dependencies(twist_sub_with_estop ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(walk_forward_high_level_cmd_vel src/exe/walk_forward_high_level_cmd_vel.cpp)
+target_link_libraries(walk_forward_high_level_cmd_vel ${EXTRA_LIBS} ${catkin_LIBRARIES})
+add_dependencies(walk_forward_high_level_cmd_vel ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
