@@ -166,7 +166,7 @@ int main(int argc, char **argv)
 			// pub.publish(twist_estop);
 
 
-		// }
+		}
 		ros::spinOnce();
 		loop_rate.sleep();
 	}
