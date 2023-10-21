@@ -88,3 +88,21 @@ angular: \
   y: 0.0 \
   z: 0.0" 
 ```
+
+### Launch files to run
+RTABMap
+```
+roslaunch rtabmap_ros rtabmap.launch     rtabmap_args:="--delete_db_on_start"     depth_topic:=/camera/aligned_depth_to_color/image_raw     rgb_topic:=/camera/color/image_raw     camera_info_topic:=/camera/color/camera_info     approx_sync:=false
+```
+
+Realsense:
+```
+roslaunch realsense2_camera rs_camera.launch align_depth:=true
+```
+
+Move base:
+```
+roslaunch ghar_ros_go1 move_base_go1.launch
+```
+
+
