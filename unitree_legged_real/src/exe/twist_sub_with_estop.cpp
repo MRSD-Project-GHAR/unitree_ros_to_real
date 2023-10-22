@@ -13,15 +13,15 @@ using namespace UNITREE_LEGGED_SDK;
 class Custom
 {
 public:
-    UDP low_udp;
+    // UDP low_udp;
     UDP high_udp;
 
     HighCmd temp_high_cmd = {0};
     HighCmd high_cmd = {0};
     HighState high_state = {0};
 
-    LowCmd low_cmd = {0};
-    LowState low_state = {0};
+    // LowCmd low_cmd = {0};
+    // LowState low_state = {0};
     bool estop = false;
 
     Safety safe;
@@ -33,12 +33,12 @@ public:
     Custom()
         : 
         // low_udp(LOWLEVEL),
-        low_udp(LOWLEVEL, 8090, "192.168.123.10", 8007),
+        // low_udp(LOWLEVEL, 8090, "192.168.123.10", 8007),
         high_udp(8090, "192.168.123.161", 8082, sizeof(HighCmd), sizeof(HighState)),
         safe(LeggedType::Go1)
     {
         high_udp.InitCmdData(high_cmd);
-        low_udp.InitCmdData(low_cmd);
+        // low_udp.InitCmdData(low_cmd);
     }
 
     void highUdpSend()
@@ -49,19 +49,19 @@ public:
         high_udp.Send();
     }
 
-    void lowUdpSend()
-    {
+    // void lowUdpSend()
+    // {
 
-        // low_udp.SetSend(low_cmd);
-        low_udp.Send();
-    }
+    //     // low_udp.SetSend(low_cmd);
+    //     low_udp.Send();
+    // }
 
-    void lowUdpRecv()
-    {
+    // void lowUdpRecv()
+    // {
 
-        low_udp.Recv();
-        // low_udp.GetRecv(low_state);
-    }
+    //     low_udp.Recv();
+    //     // low_udp.GetRecv(low_state);
+    // }
 
     void highUdpRecv()
     {
@@ -77,24 +77,24 @@ public:
 void Custom::RobotControl()
 {
   motiontime++;
-  low_udp.GetRecv(low_state);
+//   low_udp.GetRecv(low_state);
 
-  memcpy(&_keyData, &low_state.wirelessRemote[0], 40);
+//   memcpy(&_keyData, &low_state.wirelessRemote[0], 40);
 
-  if ((int)_keyData.btn.components.A == 1)
-  {
-    std::cout << "The key A is pressed, and the value of lx is " << _keyData.lx << std::endl;
-	estop = true;
-  }
+//   if ((int)_keyData.btn.components.A == 1)
+//   {
+    // std::cout << "The key A is pressed, and the value of lx is " << _keyData.lx << std::endl;
+	// estop = true;
+//   }
 
-  if (motiontime > 10)
-  {
-    int res1 = safe.PowerProtect(low_cmd, low_state, 1);
+//   if (motiontime > 10)
+//   {
+    // int res1 = safe.PowerProtect(low_cmd, low_state, 1);
     // You can uncomment it for position protection
     // int res2 = safe.PositionProtect(cmd, state, 10);
-    if (res1 < 0)
-      exit(-1);
-  }
+    // if (res1 < 0)
+    //   exit(-1);
+//   }
 
 //   low_udp.SetSend(low_cmd);
 
@@ -194,14 +194,14 @@ int main(int argc, char **argv)
     LoopFunc loop_udpSend("high_udp_send", 0.002, 3, boost::bind(&Custom::highUdpSend, &custom));
     LoopFunc loop_udpRecv("high_udp_recv", 0.002, 3, boost::bind(&Custom::highUdpRecv, &custom));
     LoopFunc loop_control("control_loop", custom.dt, boost::bind(&Custom::RobotControl, &custom));
-	LoopFunc loop_udpSend_low("low_udp_send", custom.dt, 3, boost::bind(&Custom::lowUdpSend, &custom));
-	LoopFunc loop_udpRecv_low("low_udp_recv", custom.dt, 3, boost::bind(&Custom::lowUdpRecv, &custom));
+	// LoopFunc loop_udpSend_low("low_udp_send", custom.dt, 3, boost::bind(&Custom::lowUdpSend, &custom));
+	// LoopFunc loop_udpRecv_low("low_udp_recv", custom.dt, 3, boost::bind(&Custom::lowUdpRecv, &custom));
 
     loop_udpSend.start();
     loop_udpRecv.start();
     loop_control.start();
-    loop_udpSend_low.start();
-    loop_udpRecv_low.start();
+    // loop_udpSend_low.start();
+    // loop_udpRecv_low.start();
 
     ros::Timer pub_timer = nh.createTimer(ros::Duration(1/500), pubVel);
     
