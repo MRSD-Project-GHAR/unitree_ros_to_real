@@ -1,8 +1,7 @@
 <launch>
     
 
-    <node pkg="unitree_legged_real" type="twist_sub_with_estop" name="node_twist_sub" output="screen"/>
-    <node pkg="unitree_legged_real" type="walk_forward_high_level_cmd_vel" name="node_walk_forward_high_level_cmd_vel" output="screen"/>
-
+    <node pkg="unitree_legged_real" type="twist_sub_with_estop" name="node_twist_sub" output="screen" respawn="true"/>
+    <!-- <node pkg="unitree_legged_real" type="walk_forward_high_level_cmd_vel" name="node_walk_forward_high_level_cmd_vel" output="screen"/> -->
     
 </launch>

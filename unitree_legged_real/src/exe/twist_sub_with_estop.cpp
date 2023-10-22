@@ -16,6 +16,7 @@ public:
     UDP low_udp;
     UDP high_udp;
 
+    HighCmd temp_high_cmd = {0};
     HighCmd high_cmd = {0};
     HighState high_state = {0};
 
@@ -86,6 +87,17 @@ void Custom::RobotControl()
 	estop = true;
   }
 
+  if (motiontime > 10)
+  {
+    int res1 = safe.PowerProtect(low_cmd, low_state, 1);
+    // You can uncomment it for position protection
+    // int res2 = safe.PositionProtect(cmd, state, 10);
+    if (res1 < 0)
+      exit(-1);
+  }
+
+//   low_udp.SetSend(low_cmd);
+
 //   safe.PowerProtect(low_cmd, low_state, 1);
 //   low_udp.SetSend(low_cmd);
 }
@@ -96,31 +108,70 @@ Custom custom;
 ros::Subscriber sub_cmd_vel;
 ros::Publisher pub_high;
 
+ros::Time velocity_timestamp;
+// geometry_msgs::Twist velocity;
+
 long cmd_vel_count = 0;
 
 void cmdVelCallback(const geometry_msgs::Twist::ConstPtr &msg)
-{
-    printf("cmdVelCallback is running!\t%ld\n", cmd_vel_count);
+{   
+    // printf("cmdVelCallback is running!\t%ld\n", cmd_vel_count);
 
-    custom.high_cmd = rosMsg2Cmd(msg);
+    custom.temp_high_cmd = rosMsg2Cmd(msg);
+    // custom.high_cmd = rosMsg2Cmd(msg);
+    velocity_timestamp = ros::Time::now();
+    // velocity = *msg;
 
-    if (custom.estop)
+    // if (custom.estop)
+    // {
+    //     custom.high_cmd.velocity[0] = 0;
+    //     custom.high_cmd.velocity[1] = 0;
+    //     custom.high_cmd.yawSpeed = 0;
+    // }
+    // printf("cmd_x_vel = %f\n", custom.high_cmd.velocity[0]);
+    // printf("cmd_y_vel = %f\n", custom.high_cmd.velocity[1]);
+    // printf("cmd_yaw_vel = %f\n", custom.high_cmd.yawSpeed);
+
+    // unitree_legged_msgs::HighState high_state_ros;
+
+    // high_state_ros = state2rosMsg(custom.high_state);
+
+    // pub_high.publish(high_state_ros);
+
+    // printf("cmdVelCallback ending!\t%ld\n\n", cmd_vel_count++);
+}
+
+void pubVel(const ros::TimerEvent &) {      
+    // custom.high_cmd = rosMsg2Cmd(msg);
+    ros::Time curr_time = ros::Time::now();
+
+    ros::Duration time_elapsed = curr_time - velocity_timestamp;
+    auto time_elapsed_secs = time_elapsed.toSec();
+    ROS_INFO("estop pressed: %d", custom.estop);
+    ROS_INFO("time elapsed: %lf", time_elapsed_secs);
+    
+    if (custom.estop || (time_elapsed_secs > 1))
     {
         custom.high_cmd.velocity[0] = 0;
         custom.high_cmd.velocity[1] = 0;
         custom.high_cmd.yawSpeed = 0;
+        printf("Setting to 0\n\n");
+    } else {
+        custom.high_cmd = custom.temp_high_cmd;
+        printf("Setting to some velocity\n\n");
+        printf("cmd_x_vel = %f\n", custom.high_cmd.velocity[0]);
+        printf("cmd_y_vel = %f\n", custom.high_cmd.velocity[1]);
+        printf("cmd_yaw_vel = %f\n", custom.high_cmd.yawSpeed);
     }
-    printf("cmd_x_vel = %f\n", custom.high_cmd.velocity[0]);
-    printf("cmd_y_vel = %f\n", custom.high_cmd.velocity[1]);
-    printf("cmd_yaw_vel = %f\n", custom.high_cmd.yawSpeed);
 
-    unitree_legged_msgs::HighState high_state_ros;
 
-    high_state_ros = state2rosMsg(custom.high_state);
+    // unitree_legged_msgs::HighState high_state_ros;
 
-    pub_high.publish(high_state_ros);
+    // high_state_ros = state2rosMsg(custom.high_state);
 
-    printf("cmdVelCallback ending!\t%ld\n\n", cmd_vel_count++);
+    // pub_high.publish(high_state_ros);
+
+    // printf("pub vel ending!\t\n\n");
 }
 
 int main(int argc, char **argv)
@@ -134,6 +185,12 @@ int main(int argc, char **argv)
 
     sub_cmd_vel = nh.subscribe("cmd_vel", 1, cmdVelCallback);
 
+    custom.temp_high_cmd.velocity[0] = 0;
+    custom.temp_high_cmd.velocity[1] = 0;
+    custom.temp_high_cmd.yawSpeed = 0;
+
+    velocity_timestamp = ros::Time::now();
+
     LoopFunc loop_udpSend("high_udp_send", 0.002, 3, boost::bind(&Custom::highUdpSend, &custom));
     LoopFunc loop_udpRecv("high_udp_recv", 0.002, 3, boost::bind(&Custom::highUdpRecv, &custom));
     LoopFunc loop_control("control_loop", custom.dt, boost::bind(&Custom::RobotControl, &custom));
@@ -145,6 +202,8 @@ int main(int argc, char **argv)
     loop_control.start();
     loop_udpSend_low.start();
     loop_udpRecv_low.start();
+
+    ros::Timer pub_timer = nh.createTimer(ros::Duration(1/500), pubVel);
     
     // ros::spin();
     while (ros::ok())
