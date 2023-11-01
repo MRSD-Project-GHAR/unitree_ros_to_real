@@ -36,7 +36,7 @@ ssh unitree@192.168.123.15
 
 connect to unitree (password: 123): 
 ```
-ssh unitree@172.26.172.181
+ssh unitree@172.26.183.142
 ```
 
 ## Control the robot
